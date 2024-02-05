@@ -1,6 +1,6 @@
 # Encryption
 
-## Server side encypton
+## Server side
 
 Some DB Framework (like PostgreSQL) supports fine-grained access control at the table level through the use of roles and permissions. You can assign specific privileges to those roles for particular tables. This allows you to control who perform certain actions on specific tables and log them.
 

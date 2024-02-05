@@ -4,7 +4,7 @@
 
 ### Signup without IdP
 
-{% mermaid %}
+```mermaid
 sequenceDiagram
     actor Doctor
     participant App
@@ -15,7 +15,7 @@ sequenceDiagram
     KeyCloack->>Doctor: OK
     KeyCloack-->>KeyCloack: Store
     Admin->>KeyCloack: Add capabilities
-{% mermaid %}
+```
 
 ### Signup with IdP
 
@@ -35,7 +35,7 @@ sequenceDiagram
 
 ### Login
 
-### Reset Pass
+### Reset Password
 
 ## Access Control
 

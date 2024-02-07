@@ -127,11 +127,9 @@ Where `PatientDetail` and `PatientGeneral` are encrypted, and `SensitiveData` is
 ## What if `ID` disclosure is an issue
 
 In the V0 Model, `monitor`, `dottori` and `analista` share `PID` knowledge.
-This can be see as a weakness in separation of duty: basically the same `ID` is used to identify both sensible attributes and identifiers.
-Table encryption will for sure mitigate reidentification risk, until tables will remain encrypted.
-In case of data disclosure or leakage, a better implementation should obstruct joins between tables.
+This doesn't properly follow the principle of Separation of Duty: a same `ID` links sensible attributes and identifiers. In the event of disclosure or leak of a table every other table will be directly matchable to the disclosed information. 
 
-Let change `PID` to `XID` in `PatientDetail`, and remove the relationships between entities and the `Patient` table (that in the previous ER is used as a lookup table).
+A more secure implementation implementation should obstruct joins between tables as much as possible. This can be done by making the IDs unique between all the tables.
 
 ```mermaid
 erDiagram
@@ -165,7 +163,7 @@ erDiagram
     }
 ```
 
-However now each user group has to be able to reference the same `Patient` even if they don't share the same view of the data.
+However now each user group has to be able to be able to communicate about a `Patient` using a mutually known information even if they all have different views of the IDs.
 
 ### Aliasing
 
@@ -236,10 +234,14 @@ erDiagram
     Patient ||--|| Stream : "channel"
 ```
 
-### Why?
+### How is this better?
 <!-- Double Key explanatiomn -->
-In an implemetation overview, you don't have to specify the capabilities for all lookup operation, anyone who already can decrypt a lookup table is already authorized a priori to perform any combination of lookup operation inside the same lookup table. More details [here](../auth-ac).
+The installation Technictian will be able to communicate about an installation with the installation Monitor by using the HouseNick which is known to both.
+The installation Monitor will be able to communicate about a Patient with the doctor by using the DataNick.
 
+In the case any table gets leaked no user will be able to link the newly disclosed information to his view of the data.  
+
+ex: In the case the PatientDetail table gets leaked the installation Technitian won't be able to link the rows to the rows of the Ticket table, to which he has access, because the XID identifier is unkown to him. 
 ### Logical Model
 
 ```js

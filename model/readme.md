@@ -26,15 +26,15 @@ erDiagram
 
 ## Data Identification
 
-Let's introduce `PID` and `INo`, that are respectively `Patient` and `Installation` primary keys.
-Then `DataNick` and `HouseNick` are human-friendly aliases respectively for `PID` and `INo`.
+Let's introduce `PID` and `I_NO`, that are respectively `Patient` and `Installation` primary keys.
+Then `DataNick` and `HouseNick` are human-friendly aliases respectively for `PID` and `I_NO`.
 These aliases can be used in communication contexts among users who do not share the same data views but need to refer to the same objects.
 Precisely, `DataNick` is used to refer the same `Patient`, `HouseNick` is used to refer the same `HouseNick`.
 
 `Nick` generation can be:
 
 1. **Random**: in this scenario `Nick` is randomly drawn at `Patient` creation
-2. **Hashing**: see [here](./hashing/)
+2. **Hashing**: a *derivation function* can be designed to map primary keys to `Nick`, see [here](./hashing/)
 
 From now one we will omit `Nick` when not necesssary, we will point out when presence is relevant.
 
@@ -69,6 +69,8 @@ erDiagram
     Patient ||--o{ Ticket : "NEED"
 
 ```
+
+Where `SensitiveData` is a generalization for `D1`, `D2`, `D3` and `D4` tables.
 
 ### ER Diagram - RBAC view
 
@@ -112,7 +114,7 @@ erDiagram
 ```js
 Patient(PID, I_NO) // Lookup Table
 
-PatientGeneral(I_NO, HouseNick, Name, Surname, Address, PhoneNo)
+PatientGeneral(I_NO, Name, Surname, Address, PhoneNo)
 PatientDetail(PID, CodiceFiscale, MedicalNotes)
 
 Ticket(DateTime, I_NO, Status, Notes)
@@ -136,12 +138,18 @@ erDiagram
     SensitiveData {
         ts DateTime
         str PID
-        obj Values
+        float Measure1
+        float Measure2
+        __ __
+        float MeasureN
     }
     PatientDetail {
         str XID
         str CodiceFiscale
         str MedicalNotes
+        bool HasDementia
+        __ __
+        bool HasAnimals
     }
     PatientGeneral {
         str I_NO
@@ -163,21 +171,21 @@ However now each user group has to be able to reference the same `Patient` even 
 
 In this solution, two channels are aliased:
 
-1. `dottori` <-> `monitor`/`analista` is called `DataNick`
-2. `tecnico` <-> `monitor` is called `HouseNick`
+1. `dottori` ↔️ `monitor`/`analista` is called `DataNick`
+2. `tecnico` ↔️ `monitor` is called `HouseNick`
 
 This solution requires to define all lookup operation:
 
-0. `XID` -> `DataNick`
-0. `PID` -> `DataNick`
-0. `DataNick` -> `XID`
-0. `DataNick` -> `PID`
-0. `HouseNick` -> `PID`
-0. `HouseNick` -> `XID`
-0. `HouseNick` -> `I_NO`
-0. `PID` -> `HouseNick`
-0. `XID` -> `HouseNick`
-0. `I_NO` -> `HouseNick`
+0. `XID` ➡️ `DataNick`
+0. `PID` ➡️ `DataNick`
+0. `DataNick` ➡️ `XID`
+0. `DataNick` ➡️ `PID`
+0. `HouseNick` ➡️ `PID`
+0. `HouseNick` ➡️ `XID`
+0. `HouseNick` ➡️ `I_NO`
+0. `PID` ➡️ `HouseNick`
+0. `XID` ➡️ `HouseNick`
+0. `I_NO` ➡️ `HouseNick`
 
 Then, for each operation, it shoud be defined which user groups need to access it.
 
@@ -228,7 +236,11 @@ erDiagram
     Patient ||--|| Stream : "channel"
 ```
 
-## Logical Model
+### Why?
+<!-- Double Key explanatiomn -->
+In an implemetation overview, you don't have to specify the capabilities for all lookup operation, anyone who already can decrypt a lookup table is already authorized a priori to perform any combination of lookup operation inside the same lookup table. More details [here](../auth-ac).
+
+### Logical Model
 
 ```js
 Patient(XID, DataNick)
@@ -243,5 +255,3 @@ Ticket(DateTime, HouseNick, Status, Notes)
 ```
 
 Where `Patient`, `Installation` and `Stream` are basically encrypted lookup tables, `PatientDetail` and `PatientGeneral` are also encrypted, and `SensitiveData` is stored to the existing InfluxDB.
-
-In an implemetation overview, it's not need to specify the capabilities for all lookup operation, anyone who already can decrypt a lookup table is authorized a priori to perform any combination of lookup operation inside the same lookup table.

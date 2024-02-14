@@ -1,11 +1,12 @@
 # Alias derivarion
 
+In those scenarios we don't need anymore to store any `Nick` into the data model, `Nick` can be derived locally.
+
 ## S-Table Hashing
 
-We can figure `Nick` aliases like an hashing of thier primary keys. Then an `S-table` will bind hashing to representation.
-In this scenation we don't need anymore to store any `Nick`  into the data model, `Nick` colud be derived locally.
+We can figure `Nick` aliases like hashing of their primary keys. Then an `S-table` will bind hashing to representation.
 
-Let's see example of hashing. Imagine a simple `S-table` like this:
+Let's see a toy example of hashing. Imagine a simple `S-table` like this:
 
 | Byte | Word |
 |---|---|
@@ -19,10 +20,9 @@ The `Nick` derivation will follow this flow:
 ```mermaid
 stateDiagram-v2
     %% direction LR
-    [*] --> 01010101 : PID
-    01010101 --> 1011 : Hashing
-    1011 --> Patient_Red_Magenta : S-table
-    Patient_Red_Magenta --> [*] : DataNick
+    [*] --> Hashing : PID=01010101
+    Hashing --> S_Table : 1011
+    S_Table --> [*] : Nick=Patient_Red_Magenta
 ```
 
 ## Fiat Shamir

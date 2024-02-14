@@ -1,5 +1,7 @@
 # Data Model
 
+## Conceptual ER
+
 ```mermaid
 erDiagram
     SensitiveData {
@@ -26,19 +28,20 @@ erDiagram
 
 ## Data Identification
 
-Let's introduce `PID` and `I_NO`, that are respectively `Patient` and `Installation` primary keys.
+Let's introduce `PID` and `I_NO`, which are respectively `Patient` and `Installation` primary keys.
 Then `DataNick` and `HouseNick` are human-friendly aliases respectively for `PID` and `I_NO`.
 These aliases can be used in communication contexts among users who do not share the same data views but need to refer to the same objects.
-Precisely, `DataNick` is used to refer the same `Patient`, `HouseNick` is used to refer the same `HouseNick`.
+Precisely, `DataNick` is used to relate to the same `Patient`, and `HouseNick` is used to relate to the same `HouseNick`.
 
 `Nick` generation can be:
 
 1. **Random**: in this scenario `Nick` is randomly drawn at `Patient` creation
 2. **Hashing**: a *derivation function* can be designed to map primary keys to `Nick`, see [here](./hashing/)
 
-From now one we will omit `Nick` when not necesssary, we will point out when presence is relevant.
+Precisely, we intend to use **random** generation for the [V2 model](#model-v2--what-if-id-disclosure-is-an-issue), and **hashing** generation for the [V0 model](#v0-model--baseline).
+From now on we omit `Nick` in the diagrams when not necessary; we'll point out when presence is instead relevant.
 
-## Baseline Model (V0)
+## `V0` Model · Baseline
 
 ### ER Diagram
 
@@ -122,14 +125,18 @@ Ticket(DateTime, I_NO, Status, Notes)
 SensitiveData(DateTime, PID, Values)
 ```
 
-Where `PatientDetail` and `PatientGeneral` are encrypted, and `SensitiveData` is stored to the existing InfluxDB.
+Where `PatientDetail` and `PatientGeneral` are encrypted, and `SensitiveData` is stored in the existing InfluxDB.
 
-## What if `ID` disclosure is an issue
+## Model `V2` · What if `ID` disclosure is an issue
 
-In the V0 Model, `monitor`, `dottori` and `analista` share `PID` knowledge.
-This doesn't properly follow the principle of Separation of Duty: a same `ID` links sensible attributes and identifiers. In the event of disclosure or leak of a table every other table will be directly matchable to the disclosed information. 
+In the `V0` Model, `monitor`, `dottori` and `analista` share `PID` knowledge.
+This doesn't properly follow the principle of separation of duty: `PID` indexes both sensitive attributes and their related quasi-identifiers.
 
-A more secure implementation implementation should obstruct joins between tables as much as possible. This can be done by making the IDs unique between all the tables.
+Table encryption still mitigates reidentification risk, but in case of disclosure or leak, record information will be easy to match.
+A more secure implementation should hinder joins between tables as much as possible.
+This can be achieved by using different IDs among all tables.
+
+Let's change `PID` to `XID` in `PatientDetail`, and remove the relationships between entities and the `Patient` table (that in the previous ER is used as a lookup table).
 
 ```mermaid
 erDiagram
@@ -163,29 +170,33 @@ erDiagram
     }
 ```
 
-However now each user group has to be able to be able to communicate about a `Patient` using a mutually known information even if they all have different views of the IDs.
+However, each user group must be able to relate to a `Patient` using a common alias even if they access different tables with different IDs.
 
 ### Aliasing
 
 In this solution, two channels are aliased:
 
-1. `dottori` ↔️ `monitor`/`analista` is called `DataNick`
-2. `tecnico` ↔️ `monitor` is called `HouseNick`
+- `tecnico` will be able to communicate about an `Installation` with `monitor` by using the `HouseNick`, which is known to both.
+- `monitor` or `analista` will be able to communicate about a `Patient` with `dottore` by using `DataNick`, which is known to both.
 
 This solution requires to define all lookup operation:
 
-0. `XID` ➡️ `DataNick`
-0. `PID` ➡️ `DataNick`
-0. `DataNick` ➡️ `XID`
-0. `DataNick` ➡️ `PID`
-0. `HouseNick` ➡️ `PID`
-0. `HouseNick` ➡️ `XID`
-0. `HouseNick` ➡️ `I_NO`
-0. `PID` ➡️ `HouseNick`
-0. `XID` ➡️ `HouseNick`
-0. `I_NO` ➡️ `HouseNick`
+1. `XID` ➡️ `DataNick`
+2. `PID` ➡️ `DataNick`
+3. `DataNick` ➡️ `XID`
+4. `DataNick` ➡️ `PID`
+5. `HouseNick` ➡️ `PID`
+6. `HouseNick` ➡️ `XID`
+7. `HouseNick` ➡️ `I_NO`
+8. `PID` ➡️ `HouseNick`
+9. `XID` ➡️ `HouseNick`
+10. `I_NO` ➡️ `HouseNick`
 
-Then, for each operation, it shoud be defined which user groups need to access it.
+Then, for each operation, it should be defined which user groups need to access it.
+
+Implementatively, it's not needed to specify the capabilities for all lookup operations: anyone who already can decrypt a lookup table is already authorized to perform any combination of lookup operations inside the same lookup table. More details [here](../auth-ac).
+
+### ER Logical Model
 
 ```mermaid
 erDiagram
@@ -235,13 +246,10 @@ erDiagram
 ```
 
 ### How is this better?
-<!-- Double Key explanatiomn -->
-The installation Technictian will be able to communicate about an installation with the installation Monitor by using the HouseNick which is known to both.
-The installation Monitor will be able to communicate about a Patient with the doctor by using the DataNick.
 
-In the case any table gets leaked no user will be able to link the newly disclosed information to his view of the data.  
+In the case any table gets leaked, no user will be able to link the newly disclosed information to his view of the data.
+For example, if the `PatientDetail` table is leaked, `tecnico` users won't be able to join it with `PatientGeneral` table (to which he has access), because the `XID` identifier is meaningless to them.
 
-ex: In the case the PatientDetail table gets leaked the installation Technitian won't be able to link the rows to the rows of the Ticket table, to which he has access, because the XID identifier is unkown to him. 
 ### Logical Model
 
 ```js
@@ -256,4 +264,4 @@ SensitiveData(DateTime, PID, Values)
 Ticket(DateTime, HouseNick, Status, Notes)
 ```
 
-Where `Patient`, `Installation` and `Stream` are basically encrypted lookup tables, `PatientDetail` and `PatientGeneral` are also encrypted, and `SensitiveData` is stored to the existing InfluxDB.
+Where `Patient`, `Installation` and `Stream` are basically encrypted lookup tables, `PatientDetail` and `PatientGeneral` are also encrypted, and `SensitiveData` is stored in the existing InfluxDB.

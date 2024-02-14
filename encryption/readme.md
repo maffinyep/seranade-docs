@@ -65,16 +65,16 @@ sequenceDiagram
     actor Doctor
     participant App
     participant API DB
-    participant DataBase
+    participant Database
     Doctor->>App: Send (Secret)
     App-->>App: Decrypt (Key, Secret)
     alt PUSH
         Doctor->>App: Get / Post (Patient)
         App-->>App: Encrypt (Patient, Key)
-        App->>DataBase: Send (Encrypted(Patient))
+        App->>Database: Send (Encrypted(Patient))
     end
     alt PULL
-        DataBase->>App: Send (Encrypted(Patient))
+        Database->>App: Send (Encrypted(Patient))
         App-->>App: Decrypt (Encrypted(Patient), Key)
         App->>Doctor: Send (Patient)
     end

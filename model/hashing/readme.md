@@ -4,9 +4,9 @@ In those scenarios we don't need anymore to store any `Nick` into the data model
 
 ## S-Table Hashing
 
-We can figure `Nick` aliases like hashing of their primary keys. Then an `S-table` will bind hashing to representation.
+We can figure `Nick` aliases like hashing of their primary keys. Then an `S_Table` will bind hashing to representation.
 
-Let's see a toy example of hashing. Imagine a simple `S-table` like this:
+Let's see a toy example of hashing. Imagine a simple `S_Table` like this:
 
 | Byte | Word |
 |---|---|
@@ -25,6 +25,6 @@ stateDiagram-v2
     S_Table --> [*] : Nick=Patient_Red_Magenta
 ```
 
-## Fiat Shamir
+<!-- ## Fiat Shamir
 
-## RSA Lehmer
+## RSA Lehmer -->

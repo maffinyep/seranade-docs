@@ -6,7 +6,7 @@
 erDiagram
     SensitiveData {
         str DateTime
-        obj Values
+        obj Value
     }
     Patient {
         str CodiceFiscale
@@ -50,7 +50,7 @@ erDiagram
     SensitiveData {
         str DateTime
         str PID FK
-        obj Values
+        obj Value
     }
     Patient {
         str PID PK
@@ -82,7 +82,7 @@ erDiagram
     SensitiveData {
         str DateTime
         str PID FK
-        obj Values
+        obj Value
     }
     Patient {
         str PID FK
@@ -122,7 +122,7 @@ PatientDetail(PID, CodiceFiscale, MedicalNotes)
 
 Ticket(DateTime, I_NO, Status, Notes)
 
-SensitiveData(DateTime, PID, Values)
+SensitiveData(DateTime, PID, Value)
 ```
 
 Where `PatientDetail` and `PatientGeneral` are encrypted, and `SensitiveData` is stored in the existing InfluxDB.
@@ -203,7 +203,7 @@ erDiagram
     SensitiveData {
         str DateTime
         str PID FK
-        obj Values
+        obj Value
     }
     Patient {
         str DataNick PK
@@ -259,7 +259,7 @@ Stream(PID, HouseNick, DataNick)
 
 PatientGeneral(I_NO, Surname, Name, Address, PhoneNo)
 PatientDetail(XID, CodiceFiscale, MedicalNotes)
-SensitiveData(DateTime, PID, Values)
+SensitiveData(DateTime, PID, Value)
 
 Ticket(DateTime, HouseNick, Status, Notes)
 ```

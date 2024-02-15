@@ -20,6 +20,8 @@ sequenceDiagram
 
 ### `V0` `Post Patient`
 
+See [here](../auth-ac/readme.md#access-control) to review `[GRANT ACTION]` concept.
+
 ```mermaid
 sequenceDiagram
     actor Doctor

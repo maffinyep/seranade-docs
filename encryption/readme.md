@@ -51,9 +51,10 @@ sequenceDiagram
     App->>App: Encrypt (Key, Secret)
 ```
 
-`Key` will be used to encrypt data on the client side. `Key` is encrypted with `Secret`
+Each table has its `Key` that will be used to encrypt data on the client side.
+`Secret` is the master password set by each user at first access, it will encrypt `Key` (after convenient padding like `PBKDF2`).
 
-The KeyStore API must be a trusted microservice. It allows to:
+The KeyStore API should be a trusted microservice. It allows to:
 
 1. Don't save `Key` on the client app.
 2. Regenerate `Key` when needed (forgot `Secret`, reset client app)

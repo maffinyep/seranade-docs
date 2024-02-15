@@ -1,8 +1,8 @@
 # Encryption
 
-## Server side
+## Server-side
 
-Some DB Framework (like PostgreSQL) supports fine-grained access control at the table level through the use of roles and permissions. You can assign specific privileges to those roles for particular tables. This allows you to control who perform certain actions on specific tables and log them.
+Some DB frameworks (like MariaDB) support fine-grained access control at the table level through the use of roles and permissions. You can assign specific privileges to those roles for particular tables. This allows you to control who performs certain actions on specific tables and log them.
 
 1. **Roles** for different responsibilities in the application.
 
@@ -12,7 +12,7 @@ Some DB Framework (like PostgreSQL) supports fine-grained access control at the 
     CREATE ROLE monitor;
     ```
 
-2. **Grant Privileges**  to each role for the relevant tables.
+2. **Grant Privileges** to each role for the relevant tables.
 
     ```sql
     GRANT SELECT, INSERT, UPDATE, DELETE ON PatientDetail TO dottore;
@@ -28,16 +28,11 @@ Some DB Framework (like PostgreSQL) supports fine-grained access control at the 
     GRANT monitor TO monitor-charlie;
     ```
 
-Then the dataset can be encypted using TDE (Transparent Data Encryption) on server side.
+Then the dataset can be encrypted using TDE (Transparent Data Encryption) on the server side.
 
-## Client side
+## Client-side
 
-### Login
-
-The KeyStore API must be a trusted microservice. It allows to:
-
-1. Don't save `Key` on client app
-2. Regenerate `Key` when needed (forgot `Secret`, reset client app)
+### Login - First Access
 
 ```mermaid
 sequenceDiagram
@@ -56,7 +51,12 @@ sequenceDiagram
     App->>App: Encrypt (Key, Secret)
 ```
 
-`Key` will be used to encrypt data on client side. Key is encryped with `Secret`
+`Key` will be used to encrypt data on the client side. `Key` is encrypted with `Secret`
+
+The KeyStore API must be a trusted microservice. It allows to:
+
+1. Don't save `Key` on the client app.
+2. Regenerate `Key` when needed (forgot `Secret`, reset client app)
 
 ### Pull and Push Data
 

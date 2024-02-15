@@ -43,7 +43,7 @@ sequenceDiagram
 sequenceDiagram
     actor Doctor
     Doctor->>App: Add data about patient <br> (PatientGeneral, PatientDetail)
-        App->> API: Append (Token) <br> (PatientGeneral, PatientDetail
+        App->> API: Append (Token) <br> (PatientGeneral, PatientDetail)
     alt GRANT ACTION
         API->>KeyCloack: Check (Token, `Patient`)
         KeyCloack->>API: OK (Token, `Patient`)
@@ -55,6 +55,29 @@ sequenceDiagram
     end
     API->>App: Send (Patient)
     API-->API: Generate Ticket(I_NO)
+```
+
+### `V2` `Post Patient` with client-side encryption
+
+```mermaid
+sequenceDiagram
+    actor Doctor
+    participant App
+    participant API
+    Doctor->>App: Prompt (Secret)
+    App -->App: Decrypt (E(Key), Secret)
+    Doctor->>App: Add data about patient <br> (PatientGeneral, PatientDetail)
+    App-->App: Generate: PID, I_NO, XID
+    App-->App: Generate: HouseNick, DataNick
+    alt APPEND TOKEN
+        App->>Database: Add Lookup (Patient, Stream, Installation)
+        App->>Database: Add Data (PatientGeneral, PatientDetail)
+    end
+        Database->>Doctor: OK
+    alt APPEND TOKEN
+        App->>Database: Add Ticket(I_NO)
+    end
+        Database->>App: OK
 ```
 
 ## Example of ticket flow

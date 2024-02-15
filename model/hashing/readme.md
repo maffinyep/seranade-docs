@@ -1,4 +1,4 @@
-# Alias derivarion
+# Alias derivation
 
 In those scenarios we don't need anymore to store any `Nick` into the data model, `Nick` can be derived locally.
 

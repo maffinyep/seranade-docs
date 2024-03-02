@@ -1,8 +1,10 @@
 # 🎻 Serenade Docs
 
+This documentation describes the technical aspects of specific modules of the “Serenade” medical study.
+
 ## Actors
 
-Let's describe user groups:
+Let's describe the user groups involved, and how they are related to each other:
 
 - `HOS` represents doctors or any personnel related to the hospital that organizes the recruitment of patients.
 - `IIT` represents technicians who install and maintain patient equipment.
@@ -22,16 +24,16 @@ stateDiagram-v2
 
 ## Architecture
 
-Let's describe the modules, and their features, developed in this project:
+Let's describe the modules, and their main features, developed in this project:
 
 - **FrontEnd** is a web app where:
-  - `HOS` can list patients, add new ones, and visualize their analyses.
+  - `HOS` can list patients, add new ones, and eventually visualize their analyses.
   - `IIT` and `IMT` can record their progress regarding patient equipment and any related issues.
 - **BackEnd** is a middleware API that will manage user authentication and data access control.
 - **DataBase** is a data storage for FrontEnd module, that will also provide an encryption layer for sensitive data.
-- **KeyCloak** is a web app where user capabilities and signup can be managed.
+- **KeyCloak** is a web app where user signup and capabilities can be managed.
 
-In this image, we can visualize broadly  interactions between each actor or entity:
+In this image, we can broadly visualize the interactions between each actor or entity:
 ![app architecture](./media/ark.png "app architecture")
 
 - Bold arrows represent interactions that have been modeled in this context. Modules related to this context are highlighted by the rounded rectangle.
@@ -226,6 +228,8 @@ Where:
 - ✅ is granted
 - ❌ is not granted
 
+Worth noting `Patient` will be used to lookup `PID` into `I_NO` (and vice-versa), and `PatientDetail` will be used to lookup `CodiceFiscale` into `PID`.
+
 ## Data Encryption
 
 DBMS, like MariaDB, supports fine-grained access control at the table level through the use of roles and permissions.
@@ -360,7 +364,7 @@ sequenceDiagram
 
 A doctor will upload `Patient` data through the FrontEnd, and a `Token` is required to upload data. The `Token` can be obtained through the authentication phase described earlier.
 
-For this protocol, the grant action will follow some different steps as described earlier: `Token` capabilities will be checked for `Patient` table, and then `API` will generate randomly two IDs, `I_NO` for `PatientGeneral` and `PID` for `PatientDetail`. Finally, the two records will be uploaded, and an acknowledgment will be sent to the doctor.
+For this protocol, the grant action will follow some extra steps as described earlier: `Token` capabilities will be checked for `Patient` table, and then `API` will generate randomly two IDs, `I_NO` for `PatientGeneral` and `PID` for `PatientDetail`. Finally, the two records will be uploaded, and an acknowledgment will be sent to the doctor.
 
 An installation `Ticket` is automatically generated, it will help `IMT` and `IIT` to track down the next steps.
 
@@ -391,7 +395,7 @@ sequenceDiagram
 
 When a `Ticket` is available both `IMT` and `IIT` will be notified.
 
-`IMT` can set a default set of credentials into `HomeGW` equipment before the installation phase. Then `IIT` will collect `HomeGW` equipment and install it at the patient's house. Finally, `IIT` will set `I_NO` into the equipment (like a environment variable or anything similar).
+`IMT` can set a default set of credentials into `HomeGW` equipment before the installation phase. Then `IIT` will collect `HomeGW` equipment and install it at the patient's house. Finally, `IIT` will set `I_NO` into the equipment (like an environment variable or anything similar).
 
 It's also possible for `IMT` to pre-set on `HomeGW` equipment the `PID` instead of a set of default credentials, but the equipment should be customized for each patient before installation.
 Letting the `IIT` set `I_NO` during installation will make it possible to interchange equipment without regard to who's gonna use it.
@@ -423,7 +427,7 @@ This will be possible thanks to the lookup action between `I_NO` and `PID`. Look
 
 ### Deanonymization
 
-The ***deanonymization*** protocol specifies how data can be rejoind and let `HOS` obtain the full information set for a patient.
+The ***deanonymization*** protocol specifies how data can be rejoind to let `HOS` obtain the full information set for a patient.
 
 ```mermaid
 sequenceDiagram
@@ -447,4 +451,4 @@ After `UniMi` has carried out analyses on data, it will store results on a datab
 The `HOS` will select a patient, and obtain its `PID` through a lookup action over `CodiceFiscale`.
 Then the `PID` can be used to fetch analyses from the `AnalysesDB` and finally visualize them.
 
-**A simple implementation**: analyses could be formatted and stored as static web resources, so analyses fetching will be a web request, and results will be rendered on the front-end side on a web view. This implementation will keep `FrontEnd` independent from the analysis format and make rendering easier.
+**A simple implementation**: analyses could be formatted and stored as web resources, so analyses fetching will be a web request, and results will be rendered on the front-end side on a web view. This implementation will keep `FrontEnd` independent from the analysis format and make rendering easier.
